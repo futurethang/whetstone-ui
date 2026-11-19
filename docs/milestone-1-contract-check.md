@@ -1,6 +1,8 @@
 # Milestone 1: contract check
 
-Checked 2026-11-19 against `futurethang/whetstone` at `303f7f1`. Nothing in the data repo has been changed.
+Checked 2026-11-19 against `futurethang/whetstone` at `303f7f1`.
+
+**Status (2026-11-19):** the endpoints are built on `futurethang/whetstone` branch `claude/focused-hawking-l2ur9g`. All changes are additive and the error shape is unchanged. The final parameters and fields are in that repo's SPEC §12.3, which supersedes the proposals below. Differences from the proposals: base path `/api/v1`; `/v1/entries/:id` is `/entries/:id`; bigint ids are strings; `/budget` returns `{ budget: { month_to_date, cap, remaining, month_start, currency } }`.
 
 ## Summary
 

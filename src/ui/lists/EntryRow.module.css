@@ -1,0 +1,34 @@
+.row {
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.row:first-child {
+  padding-top: var(--space-2);
+}
+
+.title {
+  font-size: var(--step-2);
+  margin: 0 0 var(--space-1);
+}
+
+.title a {
+  color: var(--ink);
+  text-decoration-color: var(--rule);
+}
+
+.title a:hover {
+  text-decoration-color: currentColor;
+}
+
+.verdict {
+  font-family: var(--font-read);
+  font-size: var(--step-2);
+  line-height: 1.55;
+  margin: 0 0 var(--space-2);
+  max-width: var(--measure);
+}
+
+.compact {
+  padding: var(--space-3) 0;
+}

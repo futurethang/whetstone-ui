@@ -3,6 +3,7 @@ import { requireOwner } from "@/auth/owner";
 import { SiteFooter } from "@/ui/layout/SiteFooter";
 import { SiteHeader } from "@/ui/layout/SiteHeader";
 import { SkipLink } from "@/ui/layout/SkipLink";
+import { SearchShortcut } from "@/ui/search/SearchShortcut";
 import styles from "@/ui/layout/Shell.module.css";
 
 /** Every owner page: session check, skip link, header, main#main, footer. */
@@ -17,6 +18,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         {children}
       </main>
       <SiteFooter returnTo={path} signedIn />
+      <SearchShortcut />
     </>
   );
 }

@@ -2,7 +2,22 @@
 
 The owner interface for [Whetstone](https://github.com/futurethang/whetstone). It is server-rendered, read-only and owner-only. It reads everything through the data layer's HTTP API (`/api/v1`) and never touches Postgres, git or the pipeline.
 
-Status: **milestone 2 (skeleton)** of the V1 UI spec. Sign-in, layout, theme, security headers, the data client and CI are in place. The home page is a placeholder that proves the connection to the API. Entry, Browse, Search and the secondary pages follow in milestones 3–6.
+Status: **V1 feature-complete (milestones 2–6)**. Every V1 route is built: Home, Topic, Entry, Search, Changes, Feature, Pipeline, Source, Digest, Observation and Article. Retiring the old UI in the data repo is the remaining step.
+
+## Routes
+
+| Route | Page |
+| --- | --- |
+| `/` | Home: changes since last visit, due for review, topics, pipeline line |
+| `/t/[...topic]` | Topic (group pages like `/t/css` include subtopics) |
+| `/e/[id]` | Entry |
+| `/search` | Search with filters, facet counts, sort and pages (all state in the URL) |
+| `/changes` | Changes by week, defaulting to since your last visit |
+| `/f/[featureId]` | Baseline feature and the entries citing it |
+| `/pipeline`, `/pipeline/sources/[id]` | Runs, budget, sources; one source and its recent items |
+| `/digest` | Pending proposals (read-only) |
+| `/o/[id]`, `/i/[id]` | Observation; collected article |
+| `/signin` | GitHub sign-in |
 
 ## Run locally
 
@@ -37,8 +52,8 @@ Set these in the Vercel project (Production; mark secrets **Sensitive**). All ar
 | `pnpm typecheck` | `next typegen` + `tsc --noEmit` |
 | `pnpm lint` | ESLint, including the data-boundary and no-inline-style rules |
 | `pnpm check:client` | Fails if a `"use client"` file is not on the allow-list |
-| `pnpm test` | Vitest: data client, session, redirects, routes, token contrast |
-| `pnpm test:e2e` | Playwright against a production build and a mock data API: auth, CSP, headers, no-JS, axe in both themes |
+| `pnpm test` | Vitest: data client, adapters (evidence, support, staleness, facets, sections), markdown sanitising, signals' unknown-value fallbacks, session, routes, token contrast |
+| `pnpm test:e2e` | Playwright against a production build and a mock data API (`tests/e2e/fixtures.mjs`): every route renders, axe in both themes, no CSP violations, no-JS, 320px, 404s, above-the-fold Entry, search URL round-trip, Mark all seen |
 
 ## Architecture rules
 

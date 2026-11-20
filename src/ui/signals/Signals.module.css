@@ -1,0 +1,92 @@
+/* Every signal: an icon (aria-hidden) plus a word, with colour as a redundant third channel. */
+.signal {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-size: var(--step-0);
+  line-height: 1.2;
+  font-weight: 500;
+  /* Long signals ("Newly available since Dec 2023 · 1 of 2 features") wrap on narrow screens. */
+  max-width: 100%;
+}
+
+.signal svg {
+  width: 1em;
+  height: 1em;
+  flex: none;
+  overflow: visible;
+}
+
+.l { font-size: var(--step-1); font-weight: 600; }
+
+.est { color: var(--est); }
+.emg { color: var(--emg); }
+.con { color: var(--con); }
+.dep { color: var(--dep); }
+.warn { color: var(--warn); }
+.muted { color: var(--muted); }
+.ink { color: var(--ink); }
+.accent { color: var(--accent); }
+
+.fill { fill: currentColor; }
+.line { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+.knock { fill: none; stroke: var(--bg); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.knockFill { fill: var(--bg); }
+.dashed { stroke-dasharray: 2.2 1.6; }
+.empty { fill: none; stroke: currentColor; stroke-width: 1.2; }
+
+.stale {
+  padding: 0.1em 0.5em;
+  border: 1px dashed currentColor;
+  border-radius: var(--radius-s);
+}
+
+.tier {
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.tierBox {
+  display: inline-grid;
+  place-items: center;
+  width: 1.45em;
+  height: 1.45em;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+.tierN { background: var(--ink); color: var(--bg); border: 1.5px solid var(--ink); }
+.tierE { border: 1.5px solid currentColor; }
+.tierC { border: 1.5px dashed currentColor; }
+
+.dot {
+  width: 0.55em;
+  height: 0.55em;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.updated {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row > li {
+  display: inline-flex;
+  max-width: 100%;
+}
+
+.reviewed {
+  color: var(--muted);
+  font-size: var(--step-0);
+}

@@ -48,11 +48,11 @@ test.describe("signed in", () => {
     await page.goto("/");
     await expect(page).toHaveTitle("Home · Whetstone");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Whetstone");
-    await expect(page.getByText("Connected to the data API: 5 topics, 3 at the top level.")).toBeVisible();
-    await expect(page.getByRole("listitem").filter({ hasText: "CSS" })).toContainText("2 entries, 1 stale");
+    await expect(page.getByRole("heading", { name: "Topics", level: 2 })).toBeVisible();
+    await expect(page.locator("#topics ~ ul > li").filter({ has: page.getByRole("heading", { name: "CSS", exact: true }) })).toContainText("4 entries, 2 stale");
     await expect(page.locator("main#main")).toHaveCount(1);
     await expect(page.getByRole("navigation", { name: "Primary" })).toBeVisible();
-    await expect(page.getByRole("searchbox", { name: "Search entries" })).toBeVisible();
+    await expect(page.getByRole("searchbox", { name: "Search entries" }).first()).toBeVisible();
   });
 
   test("unknown pages return 404", async ({ page }) => {
@@ -83,7 +83,7 @@ test.describe("signed in", () => {
     await signIn(noJs);
     const p = await noJs.newPage();
     await p.goto("/");
-    await expect(p.getByText(/Connected to the data API/)).toBeVisible();
+    await expect(p.getByRole("heading", { name: "Due for review" })).toBeVisible();
     await p.getByRole("button", { name: "Light" }).click();
     await expect(p.locator("html")).toHaveAttribute("data-theme", "light");
     await expect(p).toHaveURL(`http://localhost:${E2E.port}/`);

@@ -1,0 +1,53 @@
+.tree {
+  font-size: var(--step-0);
+}
+
+.tree h2 {
+  font-size: var(--step-0);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: var(--space-2);
+}
+
+.tree ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tree ul ul {
+  padding-left: var(--space-3);
+  border-left: 1px solid var(--rule);
+  margin-left: var(--space-1);
+}
+
+.tree a {
+  display: flex;
+  align-items: center;
+  min-height: var(--target);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-s);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.tree a:hover {
+  text-decoration: underline;
+}
+
+.tree a[aria-current="page"] {
+  background: var(--subtle);
+  font-weight: 600;
+}
+
+@media (max-width: 59.99rem) {
+  .tree > ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-2);
+  }
+  .tree ul ul {
+    display: none;
+  }
+}

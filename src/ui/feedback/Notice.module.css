@@ -1,0 +1,16 @@
+.notice {
+  max-width: var(--measure);
+  padding: var(--space-4) var(--space-6);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-l);
+}
+
+.notice p:last-child {
+  margin-bottom: 0;
+}
+
+.detail {
+  color: var(--muted);
+  font-size: var(--step-0);
+}

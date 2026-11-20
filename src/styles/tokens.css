@@ -1,0 +1,93 @@
+/*
+ * Design tokens: the only place colours live. A different presentation can ship a different token file.
+ * Dark values apply under prefers-color-scheme: dark unless ws_theme=light; ws_theme=dark forces them.
+ * tests/unit/contrast.test.ts checks every text pairing at 4.5:1 or better in both themes.
+ */
+:root {
+  color-scheme: light;
+  --bg: #faf9f6;
+  --surface: #ffffff;
+  --ink: #1a1c1e;
+  --muted: #585e66;
+  --rule: #e1ddd4;
+  --subtle: #f1efea;
+  --accent: #1f4e9c;
+  --est: #1c6a4e;
+  --emg: #1f4e9c;
+  --con: #9a4a0b;
+  --dep: #5c6168;
+  --warn: #855600;
+  --mark: #fff1c2;
+
+  --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-read: Charter, "Bitstream Charter", "Iowan Old Style", "Sitka Text", Cambria, Georgia, serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Type scale: 31, 24, 20, 17, 15 (UI base), 13, 12.5 px at a 16px root. */
+  --step-5: 1.9375rem;
+  --step-4: 1.5rem;
+  --step-3: 1.25rem;
+  --step-2: 1.0625rem;
+  --step-1: 0.9375rem;
+  --step-0: 0.8125rem;
+  --step--1: 0.78125rem;
+  --verdict: 1.3125rem;
+
+  /* 4px spacing grid */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+
+  --radius-s: 8px;
+  --radius-m: 10px;
+  --radius-l: 12px;
+  --measure: 70ch;
+  --page: 72rem;
+  --target: 24px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #15171a;
+    --surface: #1d2024;
+    --ink: #e9e7e2;
+    --muted: #a6abb2;
+    --rule: #353a40;
+    --subtle: #24282d;
+    --accent: #93b4f2;
+    --est: #72cba5;
+    --emg: #93b4f2;
+    --con: #f2ac6b;
+    --dep: #a6abb2;
+    --warn: #e7c36a;
+    --mark: #4a3f17;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #15171a;
+  --surface: #1d2024;
+  --ink: #e9e7e2;
+  --muted: #a6abb2;
+  --rule: #353a40;
+  --subtle: #24282d;
+  --accent: #93b4f2;
+  --est: #72cba5;
+  --emg: #93b4f2;
+  --con: #f2ac6b;
+  --dep: #a6abb2;
+  --warn: #e7c36a;
+  --mark: #4a3f17;
+}
+
+@media (max-width: 40rem) {
+  :root {
+    --target: 44px;
+  }
+}

@@ -1,0 +1,42 @@
+.header {
+  border-bottom: 1px solid var(--rule);
+  background: var(--surface);
+  padding: var(--space-3) var(--space-4);
+}
+
+.wordmark {
+  font-weight: 700;
+  font-size: var(--step-2);
+}
+
+.card {
+  max-width: 28rem;
+  margin: var(--space-8) auto;
+  padding: var(--space-6);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-l);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+  background: var(--ink);
+  color: var(--bg);
+  border-radius: var(--radius-s);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.button:focus-visible {
+  outline-offset: 3px;
+}
+
+.error {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--con);
+  border-radius: var(--radius-s);
+  color: var(--ink);
+}

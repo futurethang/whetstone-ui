@@ -1,0 +1,27 @@
+.lede {
+  color: var(--muted);
+}
+
+.topics {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+}
+
+.topics li {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-m);
+  padding: var(--space-3) var(--space-4);
+}
+
+.label {
+  font-weight: 600;
+}
+
+.count {
+  color: var(--muted);
+  font-size: var(--step-0);
+}

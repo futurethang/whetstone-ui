@@ -5,7 +5,7 @@
  */
 import "server-only";
 import type { z } from "zod";
-import { env } from "@/env";
+import { ConfigError, env } from "@/env";
 
 export const REVALIDATE_DEFAULT = 300;
 export const REVALIDATE_FAST = 60; // pipeline and digest
@@ -53,11 +53,18 @@ type GetOptions<S extends z.ZodType> = {
 };
 
 async function request<S extends z.ZodType>(o: GetOptions<S>, allow404: boolean): Promise<z.infer<S> | null> {
-  const url = buildUrl(env.apiUrl(), o.path, o.query);
+  let url: string, token: string;
+  try {
+    url = buildUrl(env.apiUrl(), o.path, o.query);
+    token = env.apiToken();
+  } catch (e) {
+    // Settings problems become a readable notice instead of a crash. Messages name variables, never values.
+    throw new ApiError(o.source, null, `The web app is misconfigured: ${e instanceof ConfigError ? e.message : "the data API settings are invalid"}.`);
+  }
   let res: Response;
   try {
     res = await fetch(url, {
-      headers: { authorization: `Bearer ${env.apiToken()}`, accept: "application/json" },
+      headers: { authorization: `Bearer ${token}`, accept: "application/json" },
       next: { revalidate: o.revalidate ?? REVALIDATE_DEFAULT, tags: o.tags },
       signal: AbortSignal.timeout(10_000),
     });

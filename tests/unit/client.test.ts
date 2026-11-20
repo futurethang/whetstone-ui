@@ -59,6 +59,36 @@ describe("apiGet", () => {
     expect(e.message).not.toContain("10.0.0.1");
   });
 
+  it.each([
+    [undefined, "WHETSTONE_API_URL is not set"],
+    ["whetstone.vercel.app/api", "not a full URL"],
+    ["ftp://data.test/api", "must start with https://"],
+  ])("turns a bad WHETSTONE_API_URL (%s) into a notice, not a crash", async (value, msg) => {
+    if (value === undefined) delete process.env.WHETSTONE_API_URL;
+    else process.env.WHETSTONE_API_URL = value;
+    const f = respond(200, {});
+    vi.stubGlobal("fetch", f);
+    const e = await apiGet(opts).catch((x) => x);
+    expect(e).toBeInstanceOf(ApiError);
+    expect(e.message).toContain("misconfigured");
+    expect(e.message).toContain(msg);
+    expect(f).not.toHaveBeenCalled();
+  });
+
+  it("reports a missing token as a settings problem without calling the API", async () => {
+    delete process.env.WHETSTONE_API_TOKEN;
+    vi.stubGlobal("fetch", respond(200, {}));
+    await expect(apiGet(opts)).rejects.toMatchObject({ message: expect.stringContaining("WHETSTONE_API_TOKEN is not set") });
+  });
+
+  it.each(["https://data.test/api/v1", "https://data.test/api/v1/", "https://data.test/api//"])("accepts %s as the API root", async (value) => {
+    process.env.WHETSTONE_API_URL = value;
+    const f = respond(200, { schema: 1, items: [] });
+    vi.stubGlobal("fetch", f);
+    await apiGet(opts);
+    expect((f.mock.calls[0] as unknown as [string])[0]).toBe("https://data.test/api/v1/things");
+  });
+
   it("rejects non-JSON bodies", async () => {
     vi.stubGlobal("fetch", respond(502, "<html>Bad gateway</html>", true));
     await expect(apiGet(opts)).rejects.toMatchObject({ status: 502, message: expect.stringContaining("non-JSON") });

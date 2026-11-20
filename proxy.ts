@@ -53,6 +53,8 @@ export async function proxy(request: NextRequest) {
     headers.set("content-security-policy", csp);
     headers.set("x-pathname", pathname + search);
     response = NextResponse.next({ request: { headers } });
+    // Owner pages only: prerender a linked page on hover (app/speculation-rules.json/route.ts).
+    if (session && !pathname.startsWith("/api/")) response.headers.set("speculation-rules", '"/speculation-rules.json"');
   }
   response.headers.set("content-security-policy", csp);
   return response;

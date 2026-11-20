@@ -1,0 +1,42 @@
+/* Fixed to the viewport top and out of flow: appearing or disappearing never moves content (no CLS). */
+.bar {
+  position: fixed;
+  inset: 0 0 auto;
+  height: 3px;
+  z-index: 20;
+  pointer-events: none;
+  background: var(--accent);
+  transform-origin: left;
+  transform: scaleX(0);
+  opacity: 0;
+}
+
+.bar[data-pending] {
+  opacity: 1;
+  animation: grow 8s cubic-bezier(0.1, 0.6, 0.3, 1) forwards;
+}
+
+/* Never reaches the end: the bar stops at 90% until the next page replaces this one. */
+@keyframes grow {
+  from {
+    transform: scaleX(0.1);
+  }
+  to {
+    transform: scaleX(0.9);
+  }
+}
+
+/* No motion: a static, half-width bar still says "loading" (base.css also zeroes animation durations). */
+@media (prefers-reduced-motion: reduce) {
+  .bar[data-pending] {
+    animation: none;
+    transform: scaleX(0.5);
+  }
+}
+
+/* Windows High Contrast and forced colours drop backgrounds; keep the bar visible. */
+@media (forced-colors: active) {
+  .bar {
+    background: Highlight;
+  }
+}

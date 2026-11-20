@@ -2,12 +2,13 @@
 /**
  * V1 allows only these client components (spec, "Performance and JavaScript").
  * app/(app)/error.tsx is required by Next.js: error boundaries must be client components.
+ * NavigationPending shows loading feedback after a link click or form submit (docs/decisions.md, Performance).
  * Fails CI if any other file starts with "use client".
  */
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 
-const ALLOWED = new Set(["src/ui/search/SearchShortcut.tsx", "src/ui/filters/AutoSubmitFilters.tsx", "app/(app)/error.tsx"]);
+const ALLOWED = new Set(["src/ui/search/SearchShortcut.tsx", "src/ui/filters/AutoSubmitFilters.tsx", "app/(app)/error.tsx", "src/ui/feedback/NavigationPending.tsx"]);
 const ROOTS = ["app", "src"];
 const DIRECTIVE = /^\s*(?:\/\/[^\n]*\n|\/\*[\s\S]*?\*\/|\s)*["']use client["']/;
 

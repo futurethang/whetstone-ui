@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ApiError } from "@/data/client";
-import { entryMap, getEntry } from "@/data/entries";
+import { getEntry, listEntries } from "@/data/entries";
 import type { EntryDetail } from "@/data/models";
 import { getTopics } from "@/data/topics";
 import { getLastVisit } from "@/lib/last-visit";
@@ -50,9 +50,12 @@ export default async function EntryPage({ params, searchParams }: Props) {
   let titles: Map<string, string>;
   let topicLabels: Map<string, string>;
   try {
-    const [e, map, topics] = await Promise.all([getEntry(slug, { lastVisitDay: lastVisit?.day }), entryMap(), getTopics()]);
+    // One topics request and one entry-list parse, shared by the entry, its related titles and the breadcrumb.
+    const topicsP = getTopics();
+    const listP = listEntries({ topics: topicsP });
+    const [e, list, topics] = await Promise.all([getEntry(slug, { lastVisitDay: lastVisit?.day, entries: listP, topics: topicsP }), listP, topicsP]);
     entry = e;
-    titles = new Map([...map.values()].map((x) => [x.id, x.title]));
+    titles = new Map(list.map((x) => [x.id, x.title]));
     topicLabels = new Map(topics.map((t) => [t.id, t.label]));
   } catch (err) {
     if (err instanceof ApiError) return <ApiNotice error={err} heading="Entry" />;

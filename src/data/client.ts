@@ -62,6 +62,7 @@ async function request<S extends z.ZodType>(o: GetOptions<S>, allow404: boolean)
     throw new ApiError(o.source, null, `The web app is misconfigured: ${e instanceof ConfigError ? e.message : "the data API settings are invalid"}.`);
   }
   let res: Response;
+  const started = performance.now();
   try {
     res = await fetch(url, {
       headers: { authorization: `Bearer ${token}`, accept: "application/json" },
@@ -69,8 +70,10 @@ async function request<S extends z.ZodType>(o: GetOptions<S>, allow404: boolean)
       signal: AbortSignal.timeout(10_000),
     });
   } catch (e) {
+    logTiming(o.path, null, started);
     throw new ApiError(o.source, null, `The data API could not be reached (${e instanceof Error ? e.name : "network error"}).`);
   }
+  logTiming(o.path, res.status, started);
   if (res.status === 404 && allow404) return null;
   let body: unknown;
   try {
@@ -85,6 +88,17 @@ async function request<S extends z.ZodType>(o: GetOptions<S>, allow404: boolean)
     throw new ApiError(o.source, res.status, `The data API response did not match the expected shape at ${where}.`);
   }
   return parsed.data;
+}
+
+/**
+ * One JSON line per API call when API_TIMING=1 (Vercel runtime logs, or the terminal locally): the path without
+ * its query, the status and the time to response headers. A call served from Next's data cache takes ~0 ms.
+ * Calls slower than 2 s are always logged, so a slow data API shows up in production without the flag.
+ */
+function logTiming(path: string, status: number | null, started: number) {
+  const ms = Math.round(performance.now() - started);
+  if (process.env.API_TIMING !== "1" && ms < 2000) return;
+  console.info(JSON.stringify({ evt: "api", path: path.split("?")[0], status, ms }));
 }
 
 export async function apiGet<S extends z.ZodType>(o: GetOptions<S>): Promise<z.infer<S>> {

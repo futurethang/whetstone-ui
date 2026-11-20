@@ -43,6 +43,7 @@ Set these in the Vercel project (Production; mark secrets **Sensitive**). All ar
 | `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET` | GitHub OAuth app | github.com/settings/developers; callback `https://<web-app>/api/auth/callback/github` |
 | `OWNER_GITHUB_ID` | The only GitHub account allowed in (numeric id) | `id` field of `https://api.github.com/users/<username>` |
 | `REVALIDATE_SECRET` | Bearer secret for `POST /api/revalidate` | `openssl rand -base64 32` |
+| `API_TIMING` | Optional. `1` logs one JSON line per data-API call (path, status, ms) | Set while measuring; calls over 2 s are logged regardless |
 
 ## Scripts
 
@@ -53,7 +54,8 @@ Set these in the Vercel project (Production; mark secrets **Sensitive**). All ar
 | `pnpm lint` | ESLint, including the data-boundary and no-inline-style rules |
 | `pnpm check:client` | Fails if a `"use client"` file is not on the allow-list |
 | `pnpm test` | Vitest: data client, adapters (evidence, support, staleness, facets, sections), markdown sanitising, signals' unknown-value fallbacks, session, routes, token contrast |
-| `pnpm test:e2e` | Playwright against a production build and a mock data API (`tests/e2e/fixtures.mjs`): every route renders, axe in both themes, no CSP violations, no-JS, 320px, 404s, above-the-fold Entry, search URL round-trip, Mark all seen |
+| `pnpm test:e2e` | Playwright against a production build and a mock data API (`tests/e2e/fixtures.mjs`): every route renders, axe in both themes, no CSP violations, no-JS, 320px, 404s, above-the-fold Entry, search URL round-trip, Mark all seen, navigation pending indicator, speculation rules |
+| `node scripts/measure-ttfb.mjs` | Cold and warm TTFB and data-API calls per route, against `pnpm start` and the mock API (see [docs/performance.md](docs/performance.md)) |
 
 ## Architecture rules
 
@@ -62,6 +64,7 @@ Set these in the Vercel project (Production; mark secrets **Sensitive**). All ar
 - **`src/data` has no React or Next.js imports**, so another presentation can reuse it.
 - **Server-rendered, no JavaScript needed:** every control is a link or a form. Only allow-listed client components exist (`scripts/check-use-client.mjs`).
 - **CSP:** `proxy.ts` sets a per-request nonce policy. No inline `style` attributes (ESLint enforces it).
+- **Fast navigation without a client router:** owner pages send a `Speculation-Rules` header, so Chromium prerenders a linked page on hover; CSS view transitions cross-fade between pages; `NavigationPending` shows a top bar and a polite status while a slow page loads. See [docs/performance.md](docs/performance.md).
 - **Colours live only in `src/styles/tokens.css`.** A unit test checks every text pairing at 4.5:1 in both themes.
 
 ## Auth

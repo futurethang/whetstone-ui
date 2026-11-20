@@ -4,6 +4,12 @@ import * as F from "./fixtures.mjs";
 
 const TOKEN = process.env.MOCK_API_TOKEN ?? "test-api-token";
 const PORT = Number(process.env.MOCK_API_PORT ?? 4010);
+// Optional latency (ms) per call, to model the deployed data API; /search adds the embedding call on top.
+const LATENCY = Number(process.env.MOCK_API_LATENCY_MS ?? 0);
+const SEARCH_LATENCY = Number(process.env.MOCK_API_SEARCH_LATENCY_MS ?? 0);
+// Optional copies of every entry in /entries (ids suffixed -c1, -c2…), to measure rendering at a realistic size.
+const SCALE = Number(process.env.MOCK_API_ENTRY_COPIES ?? 0);
+const calls = new Map();
 const now = () => new Date().toISOString();
 const env = (body, knowledge = false) => ({ schema: 1, ...body, ...(knowledge ? { precedence_notice: F.precedence } : {}), generated_at: now() });
 
@@ -31,7 +37,7 @@ const routes = [
     const by = (s) => mine.filter((e) => e.status === s).length;
     return { id: t.id, parent: t.id.includes("/") ? t.id.slice(0, t.id.lastIndexOf("/")) : null, review_interval: t.iv, review_interval_days: F.intervalDays(t.id), entries: mine.length, by_status: { emerging: by("emerging"), contested: by("contested"), established: by("established"), deprecated: by("deprecated") }, stale: mine.filter((e) => e.topics[0] === t.id && stale(e)).length };
   }) }, true)],
-  [/^\/api\/v1\/entries$/, () => env({ entries: F.entries.map(summary) }, true)],
+  [/^\/api\/v1\/entries$/, () => env({ entries: [...F.entries.map(summary), ...Array.from({ length: SCALE }, (_, i) => F.entries.map((e) => ({ ...summary(e), id: `${e.id}-c${i + 1}` }))).flat()] }, true)],
   [/^\/api\/v1\/entries\/([a-z0-9-]+)$/, (m) => {
     const e = F.entries.find((x) => x.id === m[1]);
     if (!e) return [404, { error: "not found" }];
@@ -91,7 +97,22 @@ createServer((req, res) => {
   };
   const url = new URL(req.url ?? "/", `http://localhost:${PORT}`);
   if (url.pathname === "/health") return send(200, { ok: true });
+  // Call counts per path since the last /stats?reset=1, for measuring each page's fan-out.
+  if (url.pathname === "/stats") {
+    const out = Object.fromEntries(calls);
+    if (url.searchParams.get("reset")) calls.clear();
+    return send(200, out);
+  }
   if (req.headers.authorization !== `Bearer ${TOKEN}`) return send(401, { error: "unauthorized" });
+  calls.set(url.pathname, (calls.get(url.pathname) ?? 0) + 1);
+  // A source whose id starts with "slow-e2e-" answers 404 after 4 s: a slow navigation for the loading-UI tests.
+  if (/^\/api\/v1\/sources\/slow-e2e-/.test(url.pathname)) return void setTimeout(() => send(404, { error: "not found" }), 4000);
+  const delay = LATENCY + (url.pathname === "/api/v1/search" ? SEARCH_LATENCY : 0);
+  if (delay > 0) return void setTimeout(() => route(url, send), delay);
+  route(url, send);
+}).listen(PORT, "127.0.0.1", () => console.log(`mock data API on http://127.0.0.1:${PORT}`));
+
+function route(url, send) {
   for (const [re, fn] of routes) {
     const m = re.exec(url.pathname);
     if (!m) continue;
@@ -99,4 +120,4 @@ createServer((req, res) => {
     return Array.isArray(out) ? send(out[0], out[1]) : send(200, out);
   }
   return send(404, { error: "not found" });
-}).listen(PORT, "127.0.0.1", () => console.log(`mock data API on http://127.0.0.1:${PORT}`));
+}

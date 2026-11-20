@@ -51,6 +51,7 @@
 
 .prose table {
   display: block;
+  position: relative;
   overflow-x: auto;
 }
 

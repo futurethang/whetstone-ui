@@ -84,8 +84,11 @@
     max-width: 100%;
   }
 
+  /* Anchored at the containing block's corner so hidden text at the end of a wrapped line can never widen the page. */
   .visually-hidden {
     position: absolute !important;
+    top: 0;
+    left: 0;
     width: 1px;
     height: 1px;
     margin: -1px;

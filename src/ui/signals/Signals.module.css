@@ -5,8 +5,9 @@
   gap: 0.35em;
   font-size: var(--step-0);
   line-height: 1.2;
-  white-space: nowrap;
   font-weight: 500;
+  /* Long signals ("Newly available since Dec 2023 · 1 of 2 features") wrap on narrow screens. */
+  max-width: 100%;
 }
 
 .signal svg {
@@ -82,6 +83,7 @@
 
 .row > li {
   display: inline-flex;
+  max-width: 100%;
 }
 
 .reviewed {

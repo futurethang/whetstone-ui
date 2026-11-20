@@ -63,7 +63,7 @@ export function SupportTable({ features, support }: { features: Feature[]; suppo
   return (
     <section id="browser-support" className={s.section} aria-labelledby="browser-support-h">
       <h2 id="browser-support-h">Browser support</h2>
-      <div className={s.tableWrap} role="region" aria-labelledby="browser-support-h" tabIndex={0}>
+      <div className={s.tableWrap} role="region" aria-label="Browser support table, scrollable" tabIndex={0}>
         <table className={s.table} aria-labelledby="browser-support-h">
           <thead>
             <tr>

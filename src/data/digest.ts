@@ -2,15 +2,15 @@ import "server-only";
 import { DeltasResponse } from "./api-types";
 import { REVALIDATE_FAST, apiGet } from "./client";
 import { listEntries } from "./entries";
-import type { Proposal } from "./models";
+import type { EntrySummary, Proposal } from "./models";
 
-/** Pending digest proposals, highest score first. Read-only in V1. */
-export async function getPendingProposals(): Promise<Proposal[]> {
-  const [res, entries] = await Promise.all([
+/** Pending digest proposals, highest score first. Read-only in V1. `entries` shares a list another call requested. */
+export async function getPendingProposals(entries?: Promise<EntrySummary[]>): Promise<Proposal[]> {
+  const [res, list] = await Promise.all([
     apiGet({ source: "digest", path: "deltas", query: { outcome: "pending", limit: 200 }, schema: DeltasResponse, tags: ["digest"], revalidate: REVALIDATE_FAST }),
-    listEntries(),
+    entries ?? listEntries(),
   ]);
-  const titles = new Map(entries.map((e) => [e.id, e.title]));
+  const titles = new Map(list.map((e) => [e.id, e.title]));
   return res.deltas
     .map((d) => ({
       id: d.id,

@@ -111,3 +111,18 @@
     }
   }
 }
+
+/*
+ * Cross-document view transitions: a link click keeps the current page on screen and cross-fades to the next one
+ * instead of flashing blank. CSS only, so it needs no JavaScript and no CSP change; browsers without support
+ * navigate as before. Off under prefers-reduced-motion. The header keeps its own name so it stays put.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+
+  ::view-transition-group(root) {
+    animation-duration: 150ms;
+  }
+}

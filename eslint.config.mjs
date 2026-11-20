@@ -64,7 +64,7 @@ export default tseslint.config(
   },
   {
     files: ["scripts/**/*.mjs", "tests/**/*.mjs"],
-    languageOptions: { globals: { process: "readonly", console: "readonly", URL: "readonly" } },
+    languageOptions: { globals: { process: "readonly", console: "readonly", URL: "readonly", fetch: "readonly", performance: "readonly", setTimeout: "readonly", TextEncoder: "readonly" } },
   },
   {
     files: ["src/data/client.ts", "src/auth/github.ts", "tests/**/*.ts", "playwright.config.ts"],

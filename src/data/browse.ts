@@ -22,11 +22,14 @@ export type TopicCard = { topic: Topic; counts: GroupCounts; children: Array<{ t
 
 /** Everything Home needs, fetched together so a failure shows one notice instead of partial content. */
 export async function getHome(lastVisitDay: string | null) {
+  // Every request starts at once; the entry list and topics are parsed once and shared.
+  const topicsP = getTopics();
+  const entriesP = listEntries({ lastVisitDay, topics: topicsP });
   const [entries, topics, since, proposals, runs, sources, budget] = await Promise.all([
-    listEntries({ lastVisitDay }),
-    getTopics(),
-    getChangesSinceVisit(lastVisitDay),
-    getPendingProposals(),
+    entriesP,
+    topicsP,
+    getChangesSinceVisit(lastVisitDay, entriesP),
+    getPendingProposals(entriesP),
     getRuns(1),
     getSources(),
     getBudget(),
@@ -73,10 +76,11 @@ export async function getTopicPage(id: string, view: TopicView, lastVisitDay: st
   observations: Observation[];
   tree: TopicNode[];
 } | null> {
-  const topics = await getTopics();
+  // All three requests start at once (one round trip on a cold cache, not two); an unknown topic wastes two cached reads.
+  const topicsP = getTopics();
+  const [topics, entries, observations] = await Promise.all([topicsP, listEntries({ lastVisitDay, topics: topicsP }), getObservations({ topic: id, limit: 5 })]);
   const topic = topics.find((t) => t.id === id);
   if (!topic) return null;
-  const [entries, observations] = await Promise.all([listEntries({ lastVisitDay }), getObservations({ topic: id, limit: 5 })]);
   const byId = new Map(topics.map((t) => [t.id, t]));
   const segs = id.split("/");
   const ancestors = segs.slice(0, -1).map((_, i) => byId.get(segs.slice(0, i + 1).join("/"))!).filter(Boolean);

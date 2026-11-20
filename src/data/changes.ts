@@ -5,18 +5,19 @@ import { addDays, todayIso } from "./adapters/dates";
 import { inTopic as inTopic } from "./adapters/topic-tree";
 import { eventLabel } from "./adapters/history";
 import { listEntries } from "./entries";
-import type { ChangeEvent, ChangeSummary } from "./models";
+import type { ChangeEvent, ChangeSummary, EntrySummary } from "./models";
 
 const s = (v: unknown) => (typeof v === "string" && v ? v : null);
 
 /**
  * History events across entries on or after `since` and before `until` (both days), newest first.
  * The API caps a call at 500 events; `hasMore` says older ones remain in the window.
+ * `entries` (titles and topics only) lets a page that already requested the entry list share it.
  */
-export async function getChanges(args: { since: string; until?: string; limit?: number }): Promise<{ events: ChangeEvent[]; hasMore: boolean }> {
+export async function getChanges(args: { since: string; until?: string; limit?: number; entries?: Promise<EntrySummary[]> }): Promise<{ events: ChangeEvent[]; hasMore: boolean }> {
   const [res, entries] = await Promise.all([
     apiGet({ source: "changes", path: "changes", query: { since: args.since, until: args.until, limit: args.limit ?? 500 }, schema: ChangesResponse, tags: ["entries"] }),
-    listEntries(),
+    args.entries ?? listEntries(),
   ]);
   const byId = new Map(entries.map((e) => [e.id, e]));
   const events = res.changes.flatMap((c) => {
@@ -39,16 +40,16 @@ export function latestPerEntry(events: ChangeEvent[]): ChangeSummary[] {
 }
 
 /** Events strictly after the last-visit day (day granularity), or the last 7 days on a first visit. */
-export async function getChangesSinceVisit(lastVisitDay: string | null): Promise<{ since: string; firstVisit: boolean; changes: ChangeSummary[] }> {
+export async function getChangesSinceVisit(lastVisitDay: string | null, entries?: Promise<EntrySummary[]>): Promise<{ since: string; firstVisit: boolean; changes: ChangeSummary[] }> {
   const firstVisit = !lastVisitDay;
   const since = lastVisitDay ? addDays(lastVisitDay, 1) : addDays(todayIso(), -7);
-  const { events } = await getChanges({ since, limit: 200 });
+  const { events } = await getChanges({ since, limit: 200, entries });
   return { since: lastVisitDay ?? since, firstVisit, changes: latestPerEntry(events) };
 }
 
 /** Oldest day any change can exist: the earliest first_seen across entries. */
-export async function oldestChangeDay(): Promise<string | null> {
-  const entries = await listEntries();
+export async function oldestChangeDay(list?: Promise<EntrySummary[]>): Promise<string | null> {
+  const entries = await (list ?? listEntries());
   return entries.reduce<string | null>((min, e) => (!min || e.firstSeen < min ? e.firstSeen : min), null);
 }
 
@@ -80,7 +81,8 @@ export function isoWeekStart(day: string): string {
  */
 export async function getChangesPage(view: ChangesView, lastVisitDay: string | null) {
   const since = view.since === "last" ? (lastVisitDay ? addDays(lastVisitDay, 1) : addDays(todayIso(), -7)) : view.since;
-  const [{ events, hasMore }, oldest] = await Promise.all([getChanges({ since, until: view.until ?? undefined }), oldestChangeDay()]);
+  const entries = listEntries();
+  const [{ events, hasMore }, oldest] = await Promise.all([getChanges({ since, until: view.until ?? undefined, entries }), oldestChangeDay(entries)]);
   const filtered = events.filter((e) => (!view.topic || (e.entryTopic && inTopic(e.entryTopic, view.topic))) && (!view.kind || e.kind === view.kind));
   const weeks: Array<{ weekStart: string; events: ChangeSummary[] }> = [];
   for (const e of filtered) {

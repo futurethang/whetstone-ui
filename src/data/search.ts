@@ -14,9 +14,10 @@ export { parseSearchParams, PAGE_SIZE };
  * Moving any of this into the API later changes only this module.
  */
 export async function searchEntries(params: SearchParams, opts: { lastVisitDay?: string | null } = {}): Promise<SearchOutcome> {
+  const topicsP = getTopics();
   const [entries, topics, hits] = await Promise.all([
-    listEntries({ lastVisitDay: opts.lastVisitDay }),
-    getTopics(),
+    listEntries({ lastVisitDay: opts.lastVisitDay, topics: topicsP }),
+    topicsP,
     params.q ? apiGet({ source: "search", path: "search", query: { q: params.q, limit: 50 }, schema: SearchResponse, tags: ["entries"] }) : null,
   ]);
   const scores = hits ? new Map(hits.results.map((r, i) => [r.id, r.score ?? 1 / (i + 1)])) : null;

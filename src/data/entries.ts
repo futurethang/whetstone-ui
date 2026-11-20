@@ -10,16 +10,17 @@ import { supportRollup } from "./adapters/support-rollup";
 import { verdictLead } from "./adapters/verdict";
 import { getFeatures } from "./features";
 import { renderInline, renderMarkdown } from "./markdown";
-import type { Audience, EntryDetail, EntrySource, EntrySummary, Evidence, HistoryEvent } from "./models";
+import type { Audience, EntryDetail, EntrySource, EntrySummary, Evidence, Feature, HistoryEvent, Topic } from "./models";
 import { getTopics } from "./topics";
 
 type Raw = EntryResult & Partial<{ features: string[]; related: string[]; supersedes: string[]; superseded_by: string | null; first_seen: string; updated_at: string }>;
 
 export type EntryContext = { intervals: Map<string, number>; lastVisitDay?: string | null; today?: string };
 
-export async function entryContext(lastVisitDay?: string | null): Promise<EntryContext> {
-  const topics = await getTopics();
-  return { intervals: new Map(topics.map((t) => [t.id, t.reviewIntervalDays])), lastVisitDay };
+/** `topics` lets a caller that already started the topic request share it instead of parsing it again. */
+export async function entryContext(lastVisitDay?: string | null, topics?: Promise<Topic[]>): Promise<EntryContext> {
+  const all = await (topics ?? getTopics());
+  return { intervals: new Map(all.map((t) => [t.id, t.reviewIntervalDays])), lastVisitDay };
 }
 
 /** Raw API entry → view model. Shared by every endpoint that returns entries. */
@@ -58,16 +59,12 @@ export function toSummary(r: Raw, ctx: EntryContext): EntrySummary {
 }
 
 /** Every entry summary (hundreds at most: one call, filtered and counted on the server). */
-export async function listEntries(opts: { audience?: Audience; lastVisitDay?: string | null } = {}): Promise<EntrySummary[]> {
+export async function listEntries(opts: { audience?: Audience; lastVisitDay?: string | null; topics?: Promise<Topic[]> } = {}): Promise<EntrySummary[]> {
   const [res, ctx] = await Promise.all([
     apiGet({ source: "entries", path: "entries", schema: EntriesResponse, tags: ["entries"] }),
-    entryContext(opts.lastVisitDay),
+    entryContext(opts.lastVisitDay, opts.topics),
   ]);
   return res.entries.map((e) => toSummary(e, ctx));
-}
-
-export async function entryMap(opts: { lastVisitDay?: string | null } = {}): Promise<Map<string, EntrySummary>> {
-  return new Map((await listEntries(opts)).map((e) => [e.id, e]));
 }
 
 const ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -80,11 +77,34 @@ function toHistory(rows: Array<{ date: string; event: string; data: Record<strin
     .sort((a, b) => b.date.localeCompare(a.date));
 }
 
-export async function getEntry(id: string, opts: { audience?: Audience; lastVisitDay?: string | null } = {}): Promise<EntryDetail | null> {
+/** The early lookup's result when it was for the same ids (in the same order); otherwise fetch them now. */
+async function featureDetails(ids: string[], early: Promise<{ ids: string[]; features: Feature[] } | null>): Promise<Feature[]> {
+  if (!ids.length) return [];
+  const e = await early;
+  return e && e.ids.length === ids.length && e.ids.every((x, i) => x === ids[i]) ? e.features : getFeatures(ids);
+}
+
+/**
+ * `entries` and `topics` let a page that also needs the entry list or topics share one request and one parse.
+ */
+export async function getEntry(
+  id: string,
+  opts: { audience?: Audience; lastVisitDay?: string | null; entries?: Promise<EntrySummary[]>; topics?: Promise<Topic[]> } = {},
+): Promise<EntryDetail | null> {
   if (!ID.test(id) || id.length > 80) return null;
+  const entries = opts.entries ?? listEntries({ topics: opts.topics });
+  // Start the Baseline lookup alongside the entry request, using the feature ids from the (usually cached) entry
+  // list, instead of waiting for the entry first: one round trip to the data API on a cold cache instead of two.
+  // A failure here falls back to the sequential lookup below, which reports its own error.
+  const early: Promise<{ ids: string[]; features: Feature[] } | null> = entries
+    .then(async (list) => {
+      const ids = list.find((x) => x.id === id)?.features;
+      return ids?.length ? { ids, features: await getFeatures(ids) } : null;
+    })
+    .catch(() => null);
   const [res, ctx] = await Promise.all([
     apiGetOrNull({ source: `entry ${id}`, path: `entries/${id}`, query: { include_history: "true" }, schema: EntryResponse, tags: ["entries", `entry:${id}`] }),
-    entryContext(opts.lastVisitDay),
+    entryContext(opts.lastVisitDay, opts.topics),
   ]);
   if (!res) return null;
   const e = res.entry;
@@ -122,6 +142,6 @@ export async function getEntry(id: string, opts: { audience?: Audience; lastVisi
     tierCounts,
     history,
     epochs: [...epochs].reverse(),
-    featureDetails: summary.features.length ? await getFeatures(summary.features) : [],
+    featureDetails: await featureDetails(summary.features, early),
   };
 }

@@ -235,6 +235,8 @@ export type Source = {
   consecutiveFailures: number;
   lastError: string | null;
   failing: boolean;
+  health: "broken" | "never" | "quiet" | "ok";
+  advice: string | null;
   accepted: number;
   rejected: number;
   contributed: number;

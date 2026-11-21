@@ -14,6 +14,7 @@ const ROUTES: Array<[string, RegExp]> = [
   ["/changes", /^Changes/],
   ["/f/container-queries", /^Container queries \(feature\)/],
   ["/pipeline", /^Pipeline/],
+  ["/pipeline/sources", /^Sources/],
   ["/pipeline/sources/smashing", /^Smashing Magazine \(source\)/],
   ["/digest", /^Digest/],
   ["/o/101", /^Observation/],
@@ -218,14 +219,25 @@ test.describe("pipeline", () => {
   test.beforeEach(async ({ context }) => signIn(context));
 
   test("lists failing sources first, with budget as text and a meter", async ({ page }) => {
-    await page.goto("/pipeline?sort=name");
+    await page.goto("/pipeline");
     await expect(page.getByText("$1.29 of $15.00 spent this month")).toBeVisible();
     await expect(page.locator("meter")).toHaveAttribute("value", "1.2912");
-    await expect(page.locator("#sources-h ~ div tbody tr").first()).toContainText("Broken feed");
     await page.getByText(/Show the last \d+ runs/).click();
     await expect(page.getByText("Show error")).toBeVisible();
     await expect(page.getByRole("heading", { name: "How articles become knowledge" })).toBeVisible();
     await expect(page.getByText("Checked 2 sources, found 3 new articles; 1 failed.").first()).toBeVisible();
+  });
+});
+
+test.describe("sources page", () => {
+  test.beforeEach(async ({ context }) => signIn(context));
+
+  test("groups sources by health and says what to do", async ({ page }) => {
+    await page.goto("/pipeline/sources");
+    await expect(page.getByRole("heading", { name: "Failing (1)" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Quiet (1)" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Healthy (1)" })).toBeVisible();
+    await expect(page.getByText("The URL no longer exists")).toBeVisible();
   });
 });
 

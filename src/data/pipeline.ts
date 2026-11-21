@@ -1,10 +1,12 @@
 import "server-only";
 import { BudgetResponse, PipelineOverviewResponse, ItemResponse, ObservationResponse, ObservationsResponse, RunsResponse, SourceResponse, SourcesResponse, type ItemRow, type ObservationRow, type SourceRegistryRow } from "./api-types";
 import { JOBS, summarizeRun } from "./adapters/run-summary";
+import { classifyHealth } from "./adapters/source-health";
 import { REVALIDATE_FAST, apiGet, apiGetOrNull } from "./client";
 import type { Budget, Citation, Item, Observation, PipelineOverview, Run, Source } from "./models";
 
 const toSource = (s: SourceRegistryRow): Source => ({
+  ...classifyHealth({ type: s.type, consecutiveFailures: s.consecutive_failures, lastSuccessAt: s.last_success_at, lastItemAt: s.last_item_at, lastError: s.last_error }),
   id: s.id,
   name: s.name,
   type: s.type,
@@ -119,3 +121,4 @@ export async function getOverview(): Promise<PipelineOverview> {
 }
 
 export { JOBS };
+export { HEALTH_LABEL } from "./adapters/source-health";

@@ -251,6 +251,18 @@ export type Run = {
   error: string | null;
 };
 
+export type JobRun = Run & { summary: string };
+
+export type PipelineOverview = {
+  items: { total: number; byState: Record<string, number>; fetched24h: number; fetched7d: number };
+  discardReasons: Array<[string, number]>;
+  observations: { total: number; byStatus: Record<string, number>; openLinked: number; openUnlinked: number; openByTopic: Array<[string, number]> };
+  proposals: Record<string, number>;
+  sources: { active: number; failing: number; neverSucceeded: number; total: number };
+  lastRuns: JobRun[];
+  recentItems: Array<Item & { reason: string | null }>;
+};
+
 export type Budget = { monthStart: string; spentUsd: number; capUsd: number; remainingUsd: number };
 
 // ---------- search ----------

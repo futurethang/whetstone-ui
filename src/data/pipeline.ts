@@ -1,7 +1,8 @@
 import "server-only";
-import { BudgetResponse, ItemResponse, ObservationResponse, ObservationsResponse, RunsResponse, SourceResponse, SourcesResponse, type ItemRow, type ObservationRow, type SourceRegistryRow } from "./api-types";
+import { BudgetResponse, PipelineOverviewResponse, ItemResponse, ObservationResponse, ObservationsResponse, RunsResponse, SourceResponse, SourcesResponse, type ItemRow, type ObservationRow, type SourceRegistryRow } from "./api-types";
+import { JOBS, summarizeRun } from "./adapters/run-summary";
 import { REVALIDATE_FAST, apiGet, apiGetOrNull } from "./client";
-import type { Budget, Citation, Item, Observation, Run, Source } from "./models";
+import type { Budget, Citation, Item, Observation, PipelineOverview, Run, Source } from "./models";
 
 const toSource = (s: SourceRegistryRow): Source => ({
   id: s.id,
@@ -100,3 +101,21 @@ export async function getItem(id: string): Promise<(Item & { observations: Obser
   const res = await apiGetOrNull({ source: `article ${id}`, path: `items/${id}`, schema: ItemResponse, tags: ["digest"], revalidate: REVALIDATE_FAST });
   return res ? { ...toItem(res.item), observations: res.item.observations.map(toObservation) } : null;
 }
+
+const byCount = (m: Record<string, number>): Array<[string, number]> => Object.entries(m).sort((a, b) => b[1] - a[1]);
+
+/** Funnel, latest run per job, source health and recently fetched items in one call. */
+export async function getOverview(): Promise<PipelineOverview> {
+  const { funnel: f, sources, last_runs, recent_items } = await apiGet({ source: "pipeline overview", path: "pipeline", schema: PipelineOverviewResponse, tags: ["pipeline"], revalidate: REVALIDATE_FAST });
+  return {
+    items: { total: f.items.total, byState: f.items.by_state, fetched24h: f.items.fetched_24h, fetched7d: f.items.fetched_7d },
+    discardReasons: byCount(f.discard_reasons),
+    observations: { total: f.observations.total, byStatus: f.observations.by_status, openLinked: f.observations.open_linked_to_entry, openUnlinked: f.observations.open_unlinked, openByTopic: byCount(f.observations.open_by_topic) },
+    proposals: f.proposals,
+    sources: { active: sources.active, failing: sources.failing, neverSucceeded: sources.never_succeeded, total: sources.total },
+    lastRuns: last_runs.map((r) => ({ id: r.id, job: r.job, status: r.status, startedAt: r.started_at, finishedAt: r.finished_at, durationMs: r.duration_ms, costUsd: r.est_cost_usd, error: r.error, summary: summarizeRun(r.job, r.status, r.stats, r.error) })),
+    recentItems: recent_items.map((i) => ({ ...toItem(i), reason: i.reason })),
+  };
+}
+
+export { JOBS };

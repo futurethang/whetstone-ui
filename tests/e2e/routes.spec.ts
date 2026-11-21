@@ -222,7 +222,10 @@ test.describe("pipeline", () => {
     await expect(page.getByText("$1.29 of $15.00 spent this month")).toBeVisible();
     await expect(page.locator("meter")).toHaveAttribute("value", "1.2912");
     await expect(page.locator("#sources-h ~ div tbody tr").first()).toContainText("Broken feed");
+    await page.getByText(/Show the last \d+ runs/).click();
     await expect(page.getByText("Show error")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "How articles become knowledge" })).toBeVisible();
+    await expect(page.getByText("Checked 2 sources, found 3 new articles; 1 failed.")).toBeVisible();
   });
 });
 

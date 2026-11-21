@@ -43,6 +43,17 @@ export function formatRelative(v: string | null | undefined, now = new Date()): 
   return rtf.format(Math.round(days / 365), "year");
 }
 
+/** "5 min ago", "3 h ago", "2 days ago": for things that happen several times a day. */
+export function formatAgo(v: string | null | undefined, now = new Date()): string {
+  if (!v) return "never";
+  const d = parse(v);
+  if (!valid(d)) return v;
+  const mins = Math.max(0, Math.round((now.getTime() - d.getTime()) / 60_000));
+  if (mins < 60) return `${mins} min ago`;
+  if (mins < 48 * 60) return `${Math.round(mins / 60)} h ago`;
+  return `${Math.round(mins / 1440)} days ago`;
+}
+
 /** "8 months", "12 days" for a span of days. */
 export function formatSpan(days: number): string {
   if (days < 1) return "today";

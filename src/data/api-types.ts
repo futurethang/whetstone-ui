@@ -213,6 +213,21 @@ export const RunsResponse = z.object({
     }),
   ),
 });
+const counts = z.record(z.string(), z.number());
+export const PipelineOverviewResponse = z.object({
+  ...envelope,
+  funnel: z.object({
+    items: z.object({ total: z.number(), by_state: counts, fetched_24h: z.number(), fetched_7d: z.number() }),
+    discard_reasons: counts,
+    observations: z.object({ total: z.number(), by_status: counts, open_linked_to_entry: z.number(), open_unlinked: z.number(), open_by_stance: counts, open_by_topic: counts }),
+    proposals: counts,
+  }),
+  sources: z.object({ active: z.number(), failing: z.number(), never_succeeded: z.number(), total: z.number() }),
+  last_runs: z.array(
+    z.object({ id: str, job: str, status: str, started_at: str, finished_at: nstr, est_cost_usd: z.number(), duration_ms: z.number().nullable(), stats: z.record(z.string(), z.unknown()).default({}), error: nstr }),
+  ),
+  recent_items: z.array(ItemRow.extend({ source_name: nstr, reason: nstr })),
+});
 export const BudgetResponse = z.object({
   ...envelope,
   budget: z.object({ currency: str, month_start: str, month_to_date: z.number(), cap: z.number(), remaining: z.number() }),

@@ -86,6 +86,13 @@ const routes = [
     if (!s) return [404, { error: "not found" }];
     return env({ source: { ...s, items: F.items.filter((i) => i.source_id === s.id) } });
   }],
+  [/^\/api\/v1\/pipeline$/, () => env({
+    trust: "unreviewed",
+    funnel: { items: { total: 3, by_state: { extracted: 1, discarded: 1, fetched: 1 }, fetched_24h: 2, fetched_7d: 3 }, discard_reasons: { "prefilter: job post": 1 }, observations: { total: 2, by_status: { open: 2 }, open_linked_to_entry: 1, open_unlinked: 1, open_by_stance: { supports: 2 }, open_by_topic: { css: 2 } }, proposals: { pending: 1, accepted: 3 } },
+    sources: { active: 2, failing: 1, never_succeeded: 0, total: 2 },
+    last_runs: [{ id: "r1", job: "collect", status: "succeeded", started_at: new Date(Date.now() - 3600e3).toISOString(), finished_at: null, est_cost_usd: 0, duration_ms: 1000, stats: { sources: 2, items_new: 3, sources_failed: 1 }, error: null }],
+    recent_items: F.items.slice(0, 2).map((i) => ({ ...i, source_name: "Smashing Magazine", reason: null })),
+  })],
   [/^\/api\/v1\/runs$/, () => env({ runs: F.runs })],
   [/^\/api\/v1\/budget$/, () => env({ budget: { ...F.budget, month_start: new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)).toISOString() } })],
 ];

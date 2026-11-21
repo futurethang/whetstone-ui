@@ -161,3 +161,12 @@
 .mono {
   font-family: var(--font-mono);
 }
+
+/* Disclosure toggles meet the minimum target size. */
+.disclosure > summary {
+  cursor: pointer;
+  min-height: var(--target);
+  display: flex;
+  align-items: center;
+  color: var(--accent);
+}

@@ -225,7 +225,7 @@ test.describe("pipeline", () => {
     await page.getByText(/Show the last \d+ runs/).click();
     await expect(page.getByText("Show error")).toBeVisible();
     await expect(page.getByRole("heading", { name: "How articles become knowledge" })).toBeVisible();
-    await expect(page.getByText("Checked 2 sources, found 3 new articles; 1 failed.")).toBeVisible();
+    await expect(page.getByText("Checked 2 sources, found 3 new articles; 1 failed.").first()).toBeVisible();
   });
 });
 

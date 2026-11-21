@@ -2,12 +2,12 @@ import "server-only";
 import { DeltasResponse } from "./api-types";
 import { REVALIDATE_FAST, apiGet } from "./client";
 import { listEntries } from "./entries";
-import type { EntrySummary, Proposal } from "./models";
+import { groupDigests } from "./adapters/digests";
+import type { Digest, EntrySummary, Proposal } from "./models";
 
-/** Pending digest proposals, highest score first. Read-only in V1. `entries` shares a list another call requested. */
-export async function getPendingProposals(entries?: Promise<EntrySummary[]>): Promise<Proposal[]> {
+async function getProposals(outcome: string | undefined, entries?: Promise<EntrySummary[]>): Promise<Proposal[]> {
   const [res, list] = await Promise.all([
-    apiGet({ source: "digest", path: "deltas", query: { outcome: "pending", limit: 200 }, schema: DeltasResponse, tags: ["digest"], revalidate: REVALIDATE_FAST }),
+    apiGet({ source: "digest", path: "deltas", query: { outcome, kind: "update,status_change,new_entry,revet", limit: 200 }, schema: DeltasResponse, tags: ["digest"], revalidate: REVALIDATE_FAST }),
     entries ?? listEntries(),
   ]);
   const titles = new Map(list.map((e) => [e.id, e.title]));
@@ -25,6 +25,18 @@ export async function getPendingProposals(entries?: Promise<EntrySummary[]>): Pr
       prUrl: d.pr_url && /^https:\/\/github\.com\//.test(d.pr_url) ? d.pr_url : null,
       prNumber: d.pr_number,
       createdAt: d.created_at,
+      outcome: d.outcome,
+      decidedAt: d.decided_at,
     }))
     .sort((a, b) => b.score - a.score);
+}
+
+/** Pending digest proposals, highest score first. Read-only in V1. `entries` shares a list another call requested. */
+export function getPendingProposals(entries?: Promise<EntrySummary[]>): Promise<Proposal[]> {
+  return getProposals("pending", entries);
+}
+
+/** Every digest (one per pull request), newest first, with each proposal's outcome. */
+export async function getDigests(): Promise<Digest[]> {
+  return groupDigests(await getProposals(undefined));
 }

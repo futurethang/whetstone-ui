@@ -3,6 +3,7 @@ import styles from "./SiteHeader.module.css";
 const NAV = [
   { href: "/#topics", label: "Topics" },
   { href: "/changes", label: "Changes" },
+  { href: "/digest", label: "Digests" },
   { href: "/pipeline", label: "Pipeline" },
 ];
 

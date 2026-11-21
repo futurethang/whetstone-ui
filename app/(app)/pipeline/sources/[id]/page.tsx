@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ApiError } from "@/data/client";
 import { getSource } from "@/data/pipeline";
+import { HEALTH_LABEL } from "@/data/pipeline";
 import { formatDate, formatRelative } from "@/lib/format";
 import { External } from "@/ui/External";
 import { ApiNotice } from "@/ui/feedback/ApiNotice";
@@ -37,6 +38,11 @@ export default async function SourcePage({ params }: Props) {
       <Breadcrumb items={[{ href: "/pipeline", label: "Pipeline" }]} />
       <h1>{s.name}</h1>
       <dl className={p.facts}>
+        <dt>Health</dt>
+        <dd>
+          {HEALTH_LABEL[s.health]}
+          {s.advice ? `: ${s.advice}` : ""}
+        </dd>
         <dt>Tier</dt>
         <dd>
           <TierBadge tier={s.tier} />

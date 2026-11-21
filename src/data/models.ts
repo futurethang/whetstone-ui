@@ -219,6 +219,20 @@ export type Proposal = {
   prUrl: string | null;
   prNumber: number | null;
   createdAt: string;
+  outcome: string;
+  decidedAt: string | null;
+};
+
+/** One weekly digest: the pull request the pipeline opened and the proposals in it. */
+export type Digest = {
+  prNumber: number | null;
+  prUrl: string | null;
+  week: string;
+  state: "open" | "decided" | "unsent";
+  createdAt: string;
+  decidedAt: string | null;
+  proposals: Proposal[];
+  counts: Record<string, number>;
 };
 
 export type Source = {

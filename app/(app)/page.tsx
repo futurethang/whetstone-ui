@@ -56,11 +56,9 @@ export default async function HomePage() {
         </p>
       </section>
 
-      {pendingProposals > 0 ? (
-        <p className={s.digest}>
-          <a href="/digest">Digest: {plural(pendingProposals, "proposal")} pending</a>
-        </p>
-      ) : null}
+      <p className={s.digest}>
+        <a href="/digest">{pendingProposals > 0 ? `Digests: ${plural(pendingProposals, "proposal")} waiting for review` : "Digests: nothing waiting for review"}</a>
+      </p>
 
       <section aria-labelledby="due-h" className={s.section}>
         <h2 id="due-h">Due for review</h2>

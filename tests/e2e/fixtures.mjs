@@ -140,6 +140,7 @@ export const runs = [
 export const deltas = [
   { id: "d1", kind: "update", entry_id: "has-selector-relational-styling", path: "knowledge/entries/css/has.md", proposed_status: "established", rationale: "Two normative sources and no opposition in 90 days.", score: 4.2, observation_ids: ["101"], pr_number: 31, pr_url: "https://github.com/futurethang/whetstone/pull/31", outcome: "pending", decided_at: null, created_at: `${day(-1)}T00:00:00Z` },
   { id: "d2", kind: "new_entry", entry_id: null, path: "knowledge/entries/css/anchor.md", proposed_status: "emerging", rationale: "Anchor positioning reached Baseline.", score: 2.1, observation_ids: ["102"], pr_number: null, pr_url: null, outcome: "pending", decided_at: null, created_at: `${day(-1)}T00:00:00Z` },
+  { id: "d3", kind: "new_entry", entry_id: "container-queries", path: "knowledge/entries/css/container-queries.md", proposed_status: "emerging", rationale: "Merged last week.", score: 3, observation_ids: [], pr_number: 29, pr_url: "https://github.com/futurethang/whetstone/pull/29", outcome: "accepted", decided_at: "2026-11-21T21:33:00Z", created_at: "2026-11-21T21:27:00Z" },
 ];
 
 export const budget = { currency: "USD", month_to_date: 1.2912, cap: 15, remaining: 13.7088 };

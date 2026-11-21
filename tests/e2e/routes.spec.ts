@@ -229,6 +229,19 @@ test.describe("pipeline", () => {
   });
 });
 
+test.describe("digests page", () => {
+  test.beforeEach(async ({ context }) => signIn(context));
+
+  test("lists merged digests as well as pending proposals, and is in the nav", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name: "Digests" }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "Digests" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Digest 2026-W47 · #29/ })).toBeVisible();
+    await expect(page.getByText("Merged 21 Nov 2026")).toBeVisible();
+    await expect(page.getByText("Waiting for review").first()).toBeVisible();
+  });
+});
+
 test.describe("sources page", () => {
   test.beforeEach(async ({ context }) => signIn(context));
 
